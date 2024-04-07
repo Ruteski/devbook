@@ -5,15 +5,34 @@ import (
 	"database/sql"
 )
 
-type usuarios struct {
-	dv *sql.DB
+type respositorioDb struct {
+	db *sql.DB
 }
 
-func NovoRepositorioUsuarios(db *sql.DB) *usuarios {
-	return &usuarios{db}
+func NovoRepositorioUsuarios(db *sql.DB) *respositorioDb {
+	return &respositorioDb{db}
 }
 
 // METODO criar usuario
-func (u usuarios) Criar(usuarios models.Usuario) (uint64, error) {
-	return 0, nil
+func (repositorio respositorioDb) Criar(usuario models.Usuario) (uint64, error) {
+	statement, err := repositorio.db.Prepare(
+		"insert into usuarios (nome,nick,email,senha) values (?,?,?,?)",
+	)
+
+	if err != nil {
+		return 0, err
+	}
+	defer statement.Close()
+
+	resultado, err := statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, usuario.Senha)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := resultado.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(id), nil
 }
