@@ -4,37 +4,40 @@ import (
 	"api/src/db"
 	"api/src/models"
 	"api/src/repositorios"
+	"api/src/respostas"
 	"encoding/json"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		respostas.Erro(w, http.StatusUnprocessableEntity, err)
+		return
 	}
 
 	var usuario models.Usuario
 	if err = json.Unmarshal(body, &usuario); err != nil {
-		log.Fatal(err)
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
 	}
 
 	db, err := db.Conectar()
 	if err != nil {
-		log.Fatal(err)
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
 	}
+	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioUsuarios(db)
-	usuarioId, err := repositorio.Criar(usuario)
+	usuario.Id, err = repositorio.Criar(usuario)
 	if err != nil {
-		log.Fatal(err)
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(fmt.Sprintf("Usuário inserido com sucesso. ID: %d", usuarioId)))
+	respostas.JSON(w, http.StatusCreated, usuario)
 }
 
 func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
