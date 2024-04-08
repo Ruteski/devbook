@@ -16,7 +16,7 @@ func NovoRepositorioUsuarios(db *sql.DB) *respositorioDb {
 // METODO criar usuario
 func (repositorio respositorioDb) Criar(usuario models.Usuario) (uint64, error) {
 	statement, err := repositorio.db.Prepare(
-		"insert into usuarios (nome,nick,email,senha) values (?,?,?,?)",
+		"insert into usuarios (nome,nick,email,senha) values ($1,$2,$3,$4)",
 	)
 
 	if err != nil {
@@ -24,15 +24,22 @@ func (repositorio respositorioDb) Criar(usuario models.Usuario) (uint64, error) 
 	}
 	defer statement.Close()
 
-	resultado, err := statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, usuario.Senha)
+	_, err = statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, usuario.Senha)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := resultado.LastInsertId()
+	row, err := repositorio.db.Query("select max(id) from usuarios")
 	if err != nil {
 		return 0, err
 	}
 
-	return uint64(id), nil
+	var id uint64
+	if row.Next() {
+		if err := row.Scan(&id); err != nil {
+			return 0, err
+		}
+	}
+
+	return id, nil
 }

@@ -4,11 +4,11 @@ import (
 	"api/src/config"
 	"database/sql"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 func Conectar() (*sql.DB, error) {
-	db, err := sql.Open("mysql", config.StrConn)
+	db, err := sql.Open("postgres", config.ConnStr)
 	if err != nil {
 		return nil, err
 	}

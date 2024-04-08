@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	StrConn = ""
+	ConnStr = ""
 	Porta   = 0
 )
 
@@ -28,9 +28,11 @@ func Carregar() {
 		Porta = 9000
 	}
 
-	StrConn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
+	ConnStr = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		//ConnStr = fmt.Sprintf("user=%s password=%s host=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_USUARIO"),
 		os.Getenv("DB_SENHA"),
+		os.Getenv("DB_ENDERECO"),
 		os.Getenv("DB_NOME"),
 	)
 }
