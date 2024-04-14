@@ -98,3 +98,20 @@ func (repositorio repositorioDb) BuscarId(usuarioId uint64) (models.Usuario, err
 
 	return usuario, nil
 }
+
+func (repositorio repositorioDb) Atualizar(usuarioId uint64, usuario models.Usuario) error {
+	statement, err := repositorio.db.Prepare(
+		"update usuarios set nome = $1, nick = $2, email = $3 where id = $4",
+	)
+
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, usuarioId); err != nil {
+		return err
+	}
+
+	return nil
+}
