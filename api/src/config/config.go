@@ -12,6 +12,8 @@ import (
 var (
 	ConnStr = ""
 	Porta   = 0
+	// chave usada pra assiunar o token jwt
+	Secretkey []byte
 )
 
 // inicializa as variaveis de ambiente
@@ -35,4 +37,6 @@ func Carregar() {
 		os.Getenv("DB_ENDERECO"),
 		os.Getenv("DB_NOME"),
 	)
+
+	Secretkey = []byte(os.Getenv("SECRET_KEY"))
 }
