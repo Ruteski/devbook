@@ -1,3 +1,5 @@
+// TODO: quando houver chamada de busca em branco, tratar o retorno de erro
+
 package repositorios
 
 import (
@@ -131,4 +133,25 @@ func (repositorio repositorioDb) Deletar(usuarioId uint64) error {
 	}
 
 	return nil
+}
+
+func (repositorio repositorioDb) BuscarPorEmail(email string) (models.Usuario, error) {
+	row, err := repositorio.db.Query("select id, senha from usuarios where email = $1", email)
+	if err != nil {
+		return models.Usuario{}, err
+	}
+	defer row.Close()
+
+	var usuario models.Usuario
+
+	if row.Next() {
+		if err = row.Scan(
+			&usuario.Id,
+			&usuario.Senha,
+		); err != nil {
+			return models.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
 }
