@@ -3,18 +3,19 @@ package repositorios
 import (
 	"api/src/models"
 	"database/sql"
+	"fmt"
 )
 
-type respositorioDb struct {
+type repositorioDb struct {
 	db *sql.DB
 }
 
-func NovoRepositorioUsuarios(db *sql.DB) *respositorioDb {
-	return &respositorioDb{db}
+func NovoRepositorioUsuarios(db *sql.DB) *repositorioDb {
+	return &repositorioDb{db}
 }
 
 // METODO criar usuario
-func (repositorio respositorioDb) Criar(usuario models.Usuario) (uint64, error) {
+func (repositorio repositorioDb) Criar(usuario models.Usuario) (uint64, error) {
 	statement, err := repositorio.db.Prepare(
 		"insert into usuarios (nome,nick,email,senha) values ($1,$2,$3,$4)",
 	)
@@ -42,4 +43,34 @@ func (repositorio respositorioDb) Criar(usuario models.Usuario) (uint64, error) 
 	}
 
 	return id, nil
+}
+
+func (repositorio repositorioDb) Buscar(nomeNick string) ([]models.Usuario, error) {
+	nomeNick = fmt.Sprintf("%%%s%%", nomeNick) // retorna %algumaCoisa%
+
+	rows, err := repositorio.db.Query("select id, nome, nick, email, criadoEm from usuarios where nome ilike $1 or nick like $2", nomeNick, nomeNick)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var usuarios []models.Usuario
+
+	for rows.Next() {
+		var usuario models.Usuario
+
+		if err = rows.Scan(
+			&usuario.Id,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
 }
