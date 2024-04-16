@@ -173,3 +173,20 @@ func (repositorio repositorioDb) Seguir(usuarioId, seguidorId uint64) error {
 
 	return nil
 }
+
+func (repositorio repositorioDb) PararSeguir(usuarioId, seguidorId uint64) error {
+	statement, err := repositorio.db.Prepare(
+		"delete from seguidores where usuario_id = $1 and seguidor_id = $2",
+	)
+
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioId, seguidorId); err != nil {
+		return err
+	}
+
+	return nil
+}
