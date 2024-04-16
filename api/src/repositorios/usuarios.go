@@ -155,3 +155,21 @@ func (repositorio repositorioDb) BuscarPorEmail(email string) (models.Usuario, e
 
 	return usuario, nil
 }
+
+// Permite um usuario seguir o outro
+func (repositorio repositorioDb) Seguir(usuarioId, seguidorId uint64) error {
+	statement, err := repositorio.db.Prepare(
+		"insert into seguidores (usuario_id, seguidor_id) values ($1,$2) on conflict do nothing",
+	)
+
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioId, seguidorId); err != nil {
+		return err
+	}
+
+	return nil
+}
