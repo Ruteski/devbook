@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"api/src/auth"
 	"api/src/db"
 	"api/src/models"
 	"api/src/repositorios"
 	"api/src/respostas"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -101,6 +103,17 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	usuarioId, err := strconv.ParseUint(params["usuarioId"], 10, 64)
 	if err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	usuarioIdToken, erro := auth.ExtrairUsuarioId(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioId != usuarioIdToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("não é possível atualizar um usuário que não seja o seu"))
 		return
 	}
 
