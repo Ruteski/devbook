@@ -264,3 +264,43 @@ func (repositorio repositorioDb) BuscarSeguindo(usuarioId uint64) ([]models.Usua
 
 	return seguidores, nil
 }
+
+func (repositorio repositorioDb) BuscarSenha(usuarioId uint64) (string, error) {
+	row, err := repositorio.db.Query(
+		`select senha 
+			from usuarios
+		  where id = $1`, usuarioId)
+	if err != nil {
+		return "", err
+	}
+	defer row.Close()
+
+	var usuario models.Usuario
+
+	if row.Next() {
+		if err = row.Scan(
+			&usuario.Senha,
+		); err != nil {
+			return "", err
+		}
+	}
+
+	return usuario.Senha, nil
+}
+
+func (repositorio repositorioDb) AtualizarSenha(usuarioId uint64, senha string) error {
+	statement, err := repositorio.db.Prepare(
+		"update usuarios set senha = $1 where id = $2",
+	)
+
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(senha, usuarioId); err != nil {
+		return err
+	}
+
+	return nil
+}
