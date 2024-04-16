@@ -193,15 +193,52 @@ func (repositorio repositorioDb) PararSeguir(usuarioId, seguidorId uint64) error
 
 func (repositorio repositorioDb) BuscarSeguidores(usuarioId uint64) ([]models.Usuario, error) {
 	rows, err := repositorio.db.Query(
-		`select id 
-			   , nome 
-				, nick 
-				, email 
-				, criadoEm  
+		`select u.id 
+			   , u.nome 
+				, u.nick 
+				, u.email 
+				, u.criadoEm  
 			from usuarios u 
 		  inner join seguidores s 
 			       on u.id = s.seguidor_id
 		  where s.usuario_id = $1`, usuarioId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var seguidores []models.Usuario
+
+	for rows.Next() {
+		var seguidor models.Usuario
+
+		if err = rows.Scan(
+			&seguidor.Id,
+			&seguidor.Nome,
+			&seguidor.Nick,
+			&seguidor.Email,
+			&seguidor.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+
+		seguidores = append(seguidores, seguidor)
+	}
+
+	return seguidores, nil
+}
+
+func (repositorio repositorioDb) BuscarSeguindo(usuarioId uint64) ([]models.Usuario, error) {
+	rows, err := repositorio.db.Query(
+		`select u.id 
+			   , u.nome 
+				, u.nick 
+				, u.email 
+				, u.criadoEm  
+			from usuarios u 
+		  inner join seguidores s 
+			       on u.id = s.usuario_id
+		  where s.seguidor_id = $1`, usuarioId)
 	if err != nil {
 		return nil, err
 	}
