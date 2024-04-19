@@ -256,3 +256,27 @@ func CurtirPublicacao(w http.ResponseWriter, r *http.Request) {
 
 	respostas.JSON(w, http.StatusOK, nil)
 }
+
+func DescurtirPublicacao(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	publicacaoId, erro := strconv.ParseUint(params["publicacaoId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := db.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioPublicacoes(db)
+	if erro = repositorio.Descurtir(publicacaoId); erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, nil)
+}
