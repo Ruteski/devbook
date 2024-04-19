@@ -7,7 +7,6 @@ import (
 	"api/src/repositorios"
 	"api/src/respostas"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -33,7 +32,10 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 
 	publicacao.AutorId = usuarioId
 
-	fmt.Println(string(body))
+	if erro := publicacao.Preparar(); erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
 
 	db, erro := db.Conectar()
 	if erro != nil {
